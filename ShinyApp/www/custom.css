@@ -1,0 +1,53 @@
+/* Appliquer un fond bleu clair à l’onglet avec id "page3" */
+#page3 {
+  background-color: #e6f0fa !important;
+  min-height: calc(100vh - 80px); /* S'assurer que ça couvre l'écran */
+  padding: 20px;
+  border-radius: 10px;
+}
+
+/* Barre latérale (sidebar) */
+.skin-blue .main-sidebar {
+  background-color:  #1e6a9d !important; /* bleu foncé personnalisé */
+}
+
+/* Menu actif */
+.skin-blue .sidebar-menu > li.active > a {
+  background-color: #123a55  !important;
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+/* Survol d'un menu */
+.skin-blue .sidebar-menu > li:hover > a {
+  background-color: #12e6ac !important;
+  color: #ffffff !important;
+}
+
+/* Icônes et textes */
+.skin-blue .sidebar-menu > li > a {
+  color: #ffffff !important;
+}
+
+
+/* Personnaliser le fond et le texte des onglets uniquement pour la page 3 */
+#page3 .nav-tabs {
+  margin-bottom: 30px; 
+  background-color: #1e6a9d ;  /* Fond bleu foncé pour les onglets */
+}
+
+#page3 .nav-tabs > li > a {
+  color: #ffffff !important;  /* Texte blanc */
+  font-weight: bold;
+  font-family: 'Helvetica', sans-serif;
+}
+
+#page3 .nav-tabs > li.active > a {
+  background-color: #12e6ac !important;  /* Couleur pour l'onglet actif */
+  color: #ffffff !important;
+}
+
+#page3 .nav-tabs > li:hover > a {
+  background-color: #129fe6 !important;  /* Couleur au survol */
+  color: #ffffff !important;
+}
