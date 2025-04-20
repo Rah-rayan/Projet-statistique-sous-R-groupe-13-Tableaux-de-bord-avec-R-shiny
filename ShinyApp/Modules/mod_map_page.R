@@ -10,12 +10,12 @@ mod_map_page_ui <- function(id){
           class = "dark-box",
           div(
             class = "red-title-box",
-            h3("Upload Your Shapefile")
+            h3("Charger votre shapefile")
           ),
           wellPanel(
             fileInput(ns("shapefile_zip"), "Upload Shapefile (as .zip file)",
                       accept = c(".zip"), multiple = FALSE),
-            helpText("Please upload a zip file containing .shp, .dbf, .shx, and .prj files"),
+            helpText("Veuillez télécharger un fichier ZIP contenant les fichiers .shp, .dbf, .shx et .prj"),
             conditionalPanel(
               condition = sprintf("input['%s-shapefile_zip'] !== null", ns("")),
               selectInput(ns("value_column"), "Select Column for Coloring:", choices = NULL)
@@ -42,8 +42,7 @@ mod_map_page_ui <- function(id){
             # Description
             div(
               style = "margin: 10px; font-size: 14px;",
-              "This interactive map displays your uploaded shapefile with color coding based on your selected attribute."
-            ),
+              "Cette carte interactive affiche votre fichier shapefile téléchargé avec un code couleur basé sur l’attribut que vous avez sélectionné"),
             
             # Map
             leafletOutput(ns("map"), width = "90%", height = "500px"),
@@ -238,7 +237,7 @@ ui <- fluidPage(
         margin-bottom: 20px;
       }
       .red-title-box {
-        background-color: #dc3545;
+        background-color: #28a745;
         color: white;
         padding: 10px;
         margin-bottom: 15px;
