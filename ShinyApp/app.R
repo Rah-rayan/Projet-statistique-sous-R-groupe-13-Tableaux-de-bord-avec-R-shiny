@@ -14,7 +14,8 @@ source("modules/mod_map_page.R")  # Importer le module avant d'appeler ses fonct
 
 # UI
 ui <- dashboardPage(
-  dashboardHeader(title = "Data Analysis App"),
+  skin="green",
+  dashboardHeader(title = "Tableaux de Bord"),
   dashboardSidebar(
     sidebarMenu(
       id = "tabs",
@@ -33,7 +34,7 @@ ui <- dashboardPage(
         margin-bottom: 20px;
       }
       .red-title-box {
-        background-color: #dc3545;
+        background-color: #28a745;
         color: white;
         padding: 10px;
         margin-bottom: 15px;
@@ -54,6 +55,21 @@ ui <- dashboardPage(
         .skin-blue .sidebar-menu>li:hover>a {
           color: #fff;
           background-color: #128fe6;
+        }
+        /* Fixer l'en-tête */
+        .main-header {
+          position: fixed;
+          width: 100%;
+        }
+        
+        /* Fixer la barre latérale */
+        .main-sidebar {
+          position: fixed;
+        }
+        /* Ajuster le contenu principal */
+        .content-wrapper {
+          margin-top: 50px;
+          padding-top: 15px;
         }
       "))
     ),
@@ -127,11 +143,11 @@ ui <- dashboardPage(
                                                          style = "background-color:#052d90; color:white; font-weight:bold;"),
                                             selectInput("var_na_menage", "Variable à traiter (valeurs manquantes)", choices = NULL),
                                             verbatimTextOutput("na_info_menage"),
-                                            actionButton("remove_na_menage", "Supprimer lignes avec NA",
+                                            actionButton("remove_na_menage", "Supprimer les lignes",
                                                          style = "background-color:#16a085; color:white;"),
-                                            actionButton("mean_na_menage", "Remplacer NA par moyenne",
+                                            actionButton("mean_na_menage", "Remplacer par moyenne",
                                                          style = "background-color:#16a085; color:white;"),
-                                            actionButton("median_na_menage", "Remplacer NA par médiane", 
+                                            actionButton("median_na_menage", "Remplacer par médiane", 
                                                          style = "background-color:#16a085; color:white;")
                                    ),
                                    tabPanel("Gestion des variables",
@@ -164,11 +180,11 @@ ui <- dashboardPage(
                                                          style = "background-color:#052d90; color:white; font-weight:bold;"),
                                             selectInput("var_na_individu", "Variable à traiter (valeurs manquantes)", choices = NULL),
                                             verbatimTextOutput("na_info_individu"),
-                                            actionButton("remove_na_individu", "Supprimer lignes avec NA",
+                                            actionButton("remove_na_individu", "Supprimer les lignes",
                                                          style = "background-color:#16a085; color:white;"),
-                                            actionButton("mean_na_individu", "Remplacer NA par moyenne",
+                                            actionButton("mean_na_individu", "Remplacer par moyenne",
                                                          style = "background-color:#16a085; color:white;"),
-                                            actionButton("median_na_individu", "Remplacer NA par médiane", 
+                                            actionButton("median_na_individu", "Remplacer par médiane", 
                                                          style = "background-color:#16a085; color:white;")
                                    ),
                                    tabPanel("Gestion des variables",
@@ -443,14 +459,27 @@ server <- function(input, output, session) {
   # Fusion des bases MENAGE et INDIVIDU pour créer base_finale
   observeEvent(input$merge_bases, {
     req(values$base_menage, values$base_individu)
-    if("hhid" %in% names(values$base_menage) && "hhid" %in% names(values$base_individu)){
-      # Fusion avec suffixes pour différencier les colonnes communes (à l'exception de "hhid")
-      values$base_finale <- merge(values$base_menage, values$base_individu, by = "hhid", all = TRUE, suffixes = c("_menage", "_individu"))
-      showNotification("Fusion réalisée avec succès.", type = "message")
-    } else {
-      showNotification("La fusion ne peut être réalisée, 'hhid' manquant dans l'une des bases.", type = "error")
+    
+    if (!("hhid" %in% names(values$base_menage)) || !("hhid" %in% names(values$base_individu))) {
+      showNotification("La variable 'hhid' est manquante dans l'une des bases.", type = "error")
+      return()
     }
+    
+    # Vérification des doublons dans la base ménage
+    duplicated_hhids <- values$base_menage$hhid[duplicated(values$base_menage$hhid)]
+    if (length(duplicated_hhids) > 0) {
+      showNotification("Erreur : La base Ménage contient des doublons sur 'hhid'. Veuillez corriger avant la fusion.", type = "error", duration = NULL)
+      return()
+    }
+    
+    # Fusion des bases si aucun doublon détecté
+    values$base_finale <- merge(
+      values$base_menage, values$base_individu,
+      by = "hhid", all = TRUE, suffixes = c("_menage", "_individu")
+    )
+    showNotification("Fusion réalisée avec succès.", type = "message")
   })
+  
   
   # Télécharger la base_finale
   output$download_finale <- downloadHandler(
@@ -698,55 +727,135 @@ server <- function(input, output, session) {
   
   
   # Update selectInputs
-  observe({
-    # Mise à jour dynamique des variables disponibles pour MENAGE
-    if (!is.null(values$base_menage)) {
-      updateSelectInput(session, "menage_var1", choices = names(values$base_menage))
-      updateSelectInput(session, "menage_var2", choices = names(values$base_menage))
-      updateSelectInput(session, "menage_var3", choices = names(values$base_menage))
-      updateSelectInput(session, "menage_var4", choices = names(values$base_menage))
-    }
-    
-    # Mise à jour dynamique des variables disponibles pour INDIVIDU
-    if (!is.null(values$base_individu)) {
-      updateSelectInput(session, "individu_var1", choices = names(values$base_individu))
-      updateSelectInput(session, "individu_var2", choices = names(values$base_individu))
-      updateSelectInput(session, "individu_var3", choices = names(values$base_individu))
-      updateSelectInput(session, "individu_var4", choices = names(values$base_individu))
-    }
-  })
+
+# Dans la partie serveur, modifiez les blocs observe qui mettent à jour les sélecteurs
+
+# Pour la base ménage
+observe({
+  req(values$base_menage)
+  current_selection <- input$menage_var1  # Conserve la sélection actuelle
+  updateSelectInput(session, "menage_var1", 
+                    choices = names(values$base_menage),
+                    selected = current_selection)
+  
+  # Faites de même pour tous les autres selectInput de la base ménage
+  current_selection <- input$menage_var2
+  updateSelectInput(session, "menage_var2", 
+                    choices = names(values$base_menage),
+                    selected = current_selection)
+  
+  current_selection <- input$menage_var3
+  updateSelectInput(session, "menage_var3", 
+                    choices = names(values$base_menage),
+                    selected = current_selection)
+  
+  current_selection <- input$menage_var4
+  updateSelectInput(session, "menage_var4", 
+                    choices = names(values$base_menage),
+                    selected = current_selection)
+})
+
+# Pour la base individu
+observe({
+  req(values$base_individu)
+  current_selection <- input$individu_var1
+  updateSelectInput(session, "individu_var1", 
+                    choices = names(values$base_individu),
+                    selected = current_selection)
+  
+  # Faites de même pour tous les autres selectInput de la base individu
+  current_selection <- input$individu_var2
+  updateSelectInput(session, "individu_var2", 
+                    choices = names(values$base_individu),
+                    selected = current_selection)
+  
+  current_selection <- input$individu_var3
+  updateSelectInput(session, "individu_var3", 
+                    choices = names(values$base_individu),
+                    selected = current_selection)
+  
+  current_selection <- input$individu_var4
+  updateSelectInput(session, "individu_var4", 
+                    choices = names(values$base_individu),
+                    selected = current_selection)
+})
   
   
-  # Résumé statistique
+  # Résumé statistique pour la base Ménage
   output$summary_menage <- renderPrint({
     req(values$base_menage, input$menage_var1)
     
     var <- input$menage_var1
-    if (is.numeric(values$base_menage[[var]])) {
-      stats <- summary(values$base_menage[[var]])
-      stats <- c(stats, 
-                 Q1 = quantile(values$base_menage[[var]], 0.25, na.rm = TRUE),
-                 Q3 = quantile(values$base_menage[[var]], 0.75, na.rm = TRUE))
-      print(stats)
-    } else {
-      print("La variable sélectionnée n'est pas numérique.")
+    
+    # Vérifier si la variable est déjà numérique
+    if (!is.numeric(values$base_menage[[var]])) {
+      # Si la variable n'est pas numérique, tenter de la convertir
+      values$base_menage[[var]] <- as.numeric(values$base_menage[[var]])
+      
+      # Vérifier après conversion si c'est bien numérique
+      if (any(is.na(values$base_menage[[var]]))) {
+        print("La conversion a échoué, des valeurs manquantes ont été générées.")
+        return(NULL)
+      }
     }
+    
+    # Afficher les statistiques si la conversion a réussi
+    stats <- summary(values$base_menage[[var]])
+    stats <- c(stats, 
+               Q1 = quantile(values$base_menage[[var]], 0.25, na.rm = TRUE),
+               Q3 = quantile(values$base_menage[[var]], 0.75, na.rm = TRUE))
+    print(stats)
   })
   
+  # Résumé statistique pour la base Individu
   output$summary_individu <- renderPrint({
     req(values$base_individu, input$individu_var1)
     
     var <- input$individu_var1
-    if (is.numeric(values$base_individu[[var]])) {
-      stats <- summary(values$base_individu[[var]])
-      stats <- c(stats, 
-                 Q1 = quantile(values$base_individu[[var]], 0.25, na.rm = TRUE),
-                 Q3 = quantile(values$base_individu[[var]], 0.75, na.rm = TRUE))
-      print(stats)
-    } else {
-      print("La variable sélectionnée n'est pas numérique.")
+    
+    # Vérifier si la variable est déjà numérique
+    if (!is.numeric(values$base_individu[[var]])) {
+      # Si la variable n'est pas numérique, tenter de la convertir
+      values$base_individu[[var]] <- as.numeric(values$base_individu[[var]])
+      
+      # Vérifier après conversion si c'est bien numérique
+      if (any(is.na(values$base_individu[[var]]))) {
+        print("La conversion a échoué, des valeurs manquantes ont été générées.")
+        return(NULL)
+      }
     }
+    
+    # Afficher les statistiques si la conversion a réussi
+    stats <- summary(values$base_individu[[var]])
+    stats <- c(stats, 
+               Q1 = quantile(values$base_individu[[var]], 0.25, na.rm = TRUE),
+               Q3 = quantile(values$base_individu[[var]], 0.75, na.rm = TRUE))
+    print(stats)
   })
+  
+  
+  # Fonction pour convertir une variable en numérique si possible
+  convert_to_numeric <- function(data, var_name) {
+    if (!is.numeric(data[[var_name]])) {
+      # Essayer de convertir en numérique
+      converted <- tryCatch({
+        as.numeric(as.character(data[[var_name]]))
+      }, warning = function(w) {
+        return(NULL)
+      }, error = function(e) {
+        return(NULL)
+      })
+      
+      if (!is.null(converted)) {
+        data[[var_name]] <- converted
+        return(data[[var_name]])
+      } else {
+        return(NULL)
+      }
+    } else {
+      return(data[[var_name]])
+    }
+  }
   
   # Graphique univarié pour la base Ménage
   output$plot_menage_uni <- renderPlotly({
@@ -755,6 +864,16 @@ server <- function(input, output, session) {
     data <- values$base_menage
     var <- input$menage_var2
     plot_type <- input$menage_plot_type_uni
+    
+    # Conversion pour boxplot
+    if (plot_type == "Boxplot") {
+      numeric_var <- convert_to_numeric(data, var)
+      if (is.null(numeric_var)) {
+        showNotification("La variable sélectionnée ne peut pas être convertie en numérique pour le boxplot.", type = "error")
+        return(NULL)
+      }
+      data[[var]] <- numeric_var
+    }
     
     p <- switch(plot_type,
                 "Barres" = ggplot(data, aes_string(x = var)) + geom_bar(stat = "count", fill = "skyblue"),
@@ -772,6 +891,16 @@ server <- function(input, output, session) {
     data <- values$base_individu
     var <- input$individu_var2
     plot_type <- input$individu_plot_type_uni
+    
+    # Conversion pour boxplot
+    if (plot_type == "Boxplot") {
+      numeric_var <- convert_to_numeric(data, var)
+      if (is.null(numeric_var)) {
+        showNotification("La variable sélectionnée ne peut pas être convertie en numérique pour le boxplot.", type = "error")
+        return(NULL)
+      }
+      data[[var]] <- numeric_var
+    }
     
     p <- switch(plot_type,
                 "Barres" = ggplot(data, aes_string(x = var)) + geom_bar(stat = "count", fill = "skyblue"),
@@ -791,9 +920,25 @@ server <- function(input, output, session) {
     var_y <- input$menage_var4
     plot_type <- input$menage_plot_type_bi
     
+    # Conversion pour boxplot
+    if (plot_type == "Boxplot") {
+      numeric_var_y <- convert_to_numeric(data, var_y)
+      if (is.null(numeric_var_y)) {
+        showNotification("La variable Y ne peut pas être convertie en numérique pour le boxplot.", type = "error")
+        return(NULL)
+      }
+      data[[var_y]] <- numeric_var_y
+    }
+    
+    # Nettoyer les données
+    data_clean <- data[!is.na(data[[var_x]]) & !is.na(data[[var_y]]) & 
+                         !is.infinite(data[[var_x]]) & !is.infinite(data[[var_y]]), ]
+    
     p <- switch(plot_type,
-                "Barres" = ggplot(data, aes_string(x = var_x, fill = var_y)) + geom_bar(position = "dodge"),
-                "Boxplot" = ggplot(data, aes_string(x = var_x, y = var_y)) + geom_boxplot()
+                "Barres" = ggplot(data_clean, aes_string(x = var_x, fill = var_y)) + 
+                  geom_bar(position = "dodge"),
+                "Boxplot" = ggplot(data_clean, aes_string(x = var_x, y = var_y)) + 
+                  geom_boxplot()
     )
     
     p <- p + labs(x = var_x, y = var_y) + theme_minimal()
@@ -809,14 +954,31 @@ server <- function(input, output, session) {
     var_y <- input$individu_var4
     plot_type <- input$individu_plot_type_bi
     
+    # Conversion pour boxplot
+    if (plot_type == "Boxplot") {
+      numeric_var_y <- convert_to_numeric(data, var_y)
+      if (is.null(numeric_var_y)) {
+        showNotification("La variable Y ne peut pas être convertie en numérique pour le boxplot.", type = "error")
+        return(NULL)
+      }
+      data[[var_y]] <- numeric_var_y
+    }
+    
+    # Nettoyer les données
+    data_clean <- data[!is.na(data[[var_x]]) & !is.na(data[[var_y]]) & 
+                         !is.infinite(data[[var_x]]) & !is.infinite(data[[var_y]]), ]
+    
     p <- switch(plot_type,
-                "Barres" = ggplot(data, aes_string(x = var_x, fill = var_y)) + geom_bar(position = "dodge"),
-                "Boxplot" = ggplot(data, aes_string(x = var_x, y = var_y)) + geom_boxplot()
+                "Barres" = ggplot(data_clean, aes_string(x = var_x, fill = var_y)) + 
+                  geom_bar(position = "dodge"),
+                "Boxplot" = ggplot(data_clean, aes_string(x = var_x, y = var_y)) + 
+                  geom_boxplot()
     )
     
     p <- p + labs(x = var_x, y = var_y) + theme_minimal()
     ggplotly(p)
   })
+  
   observe({
     if (!is.null(values$base_menage)) {
       updateSelectInput(session, "vars_tab_univ_menage_1", choices = names(values$base_menage))
