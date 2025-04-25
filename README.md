@@ -1,17 +1,4 @@
-# Theme 14: Tableaux de bord avec R shiny
-
-
----
-output: 
-  html_document:
-    toc: true
-    toc_depth: 2
-    number_sections: true
-    theme: flatly
-    highlight: tango
----
-
-# 📊 Projet Shiny — Conception de Tableau de Bord
+# 📊 Theme 14: Tableaux de bord avec R shiny
 
 ## 📚 Contexte
 
