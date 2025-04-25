@@ -74,4 +74,4 @@ install.packages(c(
 
 Projet académique réalisé dans le cadre pédagogique de l'ENSAE Dakar (2025).
 Utilisation libre pour des objectifs éducatifs.
-"""
+
