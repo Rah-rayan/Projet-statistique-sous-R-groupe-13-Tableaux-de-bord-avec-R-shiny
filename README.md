@@ -2,7 +2,6 @@
 
 
 ---
-title: "README - Tableau de Bord Statistique"
 output: 
   html_document:
     toc: true
@@ -33,21 +32,6 @@ Les objectifs sont :
 - **leaflet**, **ggplot2**, **plotly**, **sf** pour la visualisation de données spatiales.
 - **DT**, **gt**, **gtsummary** pour les tableaux dynamiques.
 - **readxl**, **haven** pour l'import de bases Excel et Stata.
-
-## 📂 Arborescence du projet
-
-\`\`\`bash
-📦 Projet_shiny
- ┣ 📂 Base
- ┃ ┗ 📜 mali_map.rds
- ┣ 📂 modules
- ┃ ┣ 📜 mod_map_page.R
- ┃ ┗ 📜 CartoAnalyse.R
- ┣ 📂 www
- ┃ ┗ 📜 custom.css
- ┣ 📜 app.R
- ┣ 📜 README_Dashboard.Rmd
-\`\`\`
 
 ## 🧩 Détail des principaux fichiers
 
@@ -95,7 +79,9 @@ install.packages(c(
 
 ## 👨‍💻 Membres du projet
 
-- *À compléter selon vos noms*
+- *Ange Rayan Emilson RAHERINASOLO*
+- *Jean Luc BATABATI*
+- *Tamsir NDONG*
 
 ## 📄 Licence
 
