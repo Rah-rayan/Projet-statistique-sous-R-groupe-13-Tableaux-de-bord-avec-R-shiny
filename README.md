@@ -59,7 +59,6 @@ install.packages(c(
 ## 📈 Fonctionnalités
 
 - **Cartographie dynamique** avec Leaflet.
-- **Carte thématique du Mali** avec sélection de variables.
 - **Chargement, traitement et fusion** de données EHCVM (ménage et individu).
 - **Graphiques univariés et bivariés interactifs.**
 - **Tableaux statistiques** générés automatiquement avec `gtsummary`.
@@ -73,5 +72,3 @@ install.packages(c(
 ## 📄 Licence
 
 Projet académique réalisé dans le cadre pédagogique de l'ENSAE Dakar (2025).
-Utilisation libre pour des objectifs éducatifs.
-
